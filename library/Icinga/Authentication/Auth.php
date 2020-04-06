@@ -425,6 +425,7 @@ class Auth
         if ($rememberMe->authenticate()) {
             //TODO renew cookie
         }
+
         return $rememberMe->authenticate();
     }
 }

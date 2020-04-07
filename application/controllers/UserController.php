@@ -11,12 +11,13 @@ use Icinga\Exception\ConfigurationError;
 use Icinga\Exception\NotFoundError;
 use Icinga\Forms\Config\User\CreateMembershipForm;
 use Icinga\Forms\Config\User\UserForm;
+use Icinga\Forms\ConfirmRemovalForm;
 use Icinga\User;
 use Icinga\Web\Controller\AuthBackendController;
 use Icinga\Web\Form;
 use Icinga\Web\Notification;
 use Icinga\Web\Url;
-use Icinga\Web\Widget;
+use Icinga\Web\Widget\Dashboard;
 
 class UserController extends AuthBackendController
 {
@@ -254,6 +255,47 @@ class UserController extends AuthBackendController
 
         $this->view->form = $form;
         $this->render('form');
+    }
+
+    public function resetdashboardsAction()
+    {
+        $this->assertPermission('config/authentication/users/edit');
+
+        $userName = $this->params->getRequired('user');
+        $backendName = $this->params->getRequired('backend');
+        $backend = $this->getUserBackend($backendName);
+
+        $user = new User($userName);
+        if ($backend instanceof DomainAwareInterface) {
+            $user->setDomain($backend->getDomain());
+        }
+
+        $dashboard = new Dashboard();
+        $dashboard->setUser($user);
+
+        $this->view->form = $form = new ConfirmRemovalForm();
+        $form->setSubmitLabel(
+            t('Reset all dashboards settings')
+            . ' ' . sprintf(t('for user "%s"'), $user->getUsername())
+        );
+        $form->setRedirectUrl($this->view->url('user/show', [
+            'backend' => $backendName,
+            'user'    => $userName,
+        ]));
+        $form->setOnSuccess(function (ConfirmRemovalForm $form) use ($dashboard) {
+            try {
+                $dashboard->resetUserDashboards();
+            } catch (Exception $e) {
+                $form->error($e->getMessage());
+                return false;
+            }
+
+            Notification::success(t('User dashboard config has been reset!'));
+            return true;
+        });
+        $form->handleRequest();
+
+        $this->renderForm($form, $this->translate('Reset Dashboards'));
     }
 
     /**

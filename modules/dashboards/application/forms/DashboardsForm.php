@@ -19,42 +19,28 @@ abstract class DashboardsForm extends CompatForm
      *
      * @return array
      */
-    public function fetchDashboards()
+    public function fetchDashboardsForSelectOption()
     {
-        $publicDashboard = [];
-        $privateDashboard = [];
+        $dashboards = [];
 
         $select = (new Select())
             ->columns('*')
             ->from('dashboard')
-            ->where(['type = ?' => 'public']);
+            ->where([
+                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+            ]);
 
         $result = $this->getDb()->select($select);
 
         foreach ($result as $dashboard) {
-            $publicDashboard[$dashboard->id] = $dashboard->name;
+            $dashboards[$dashboard->id] = $dashboard->name;
         }
 
-        $query = (new Select())
-            ->from('dashboard')
-            ->columns('*')
-            ->join('user_dashboard', 'user_dashboard.dashboard_id = dashboard.id')
-            ->where([
-                'type = ?' => 'private',
-                'user_dashboard.user_name = ?' => Auth::getInstance()->getUser()->getUsername()
-            ]);
-
-        $result = $this->getDb()->select($query);
-
-        foreach ($result as $userDashboard) {
-            $privateDashboard[$userDashboard->id] = $userDashboard->name;
-        }
-
-        return array_merge($publicDashboard, $privateDashboard);
+        return $dashboards;
     }
 
     /**
-     * Create a new public dashboard and return its id
+     * Create a new dashboard and return its id
      *
      * @param string $name
      *
@@ -62,91 +48,17 @@ abstract class DashboardsForm extends CompatForm
      */
     public function createDashboard($name)
     {
-        if ($this->getValue('user-dashboard') !== null) {
-            $data = [
-                'name' => $name,
-                'type' => 'private'
-            ];
+        $data = [
+            'name'  => $name,
+            'type'  => $this->getValue('dashboard-type'),
+            'owner' => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername(): NULL
+        ];
 
-            $db = $this->getDb();
-            $db->insert('dashboard', $data);
+        $db = $this->getDb();
+        $db->insert('dashboard', $data);
 
-            return $db->lastInsertId();
-        } else {
-            $data = [
-                'name' => $name,
-                'type' => 'public'
-            ];
-
-            $db = $this->getDb();
-            $db->insert('dashboard', $data);
-
-            return $db->lastInsertId();
-        }
-    }
-
-    /**
-     * Create a user specific dashlets and return its id
-     *
-     * @param int $id     The id of the selected dashboard
-     *
-     * @return integer
-     */
-    public function createUserDashlet($id)
-    {
-        if ($this->getValue('new-dashboard-name') !== null ||
-            $this->checkForPrivateDashboard($id)) {
-            $data = [
-                'dashboard_id' => $this->fetchUserDashboardId($id),
-                'name' => $this->getValue('name'),
-                'url' => $this->getValue('url')
-            ];
-            $db = $this->getDb();
-            $db->insert('dashlet', $data);
-
-            return $db->lastInsertId();
-        } else {
-            $select = (new Select())
-                ->from('user_dashboard')
-                ->columns('dashboard_id')
-                ->orderBy('dashboard_id DESC')
-                ->limit(1);
-
-            $dashboard = $this->getDb()->select($select)->fetch();
-
-            $db = $this->getDb();
-            $db->insert('dashlet', [
-                'dashboard_id' => $dashboard->dashboard_id,
-                'name' => $this->getValue('name'),
-                'url' => $this->getValue('url')
-            ]);
-
-            return $db->lastInsertId();
-        }
-    }
-
-    /**
-     * If the dashboard is new created then fetch its id or the dashboard is already created and return just the param
-     *
-     * @param int $id       The id of new created or old dashboard
-     *
-     * @return int
-     */
-    public function fetchUserDashboardId($id)
-    {
-        if ($this->getValue('new-dashboard-name') !== null) {
-            $select = (new Select())
-                ->from('user_dashboard')
-                ->columns('dashboard_id')
-                ->orderBy('dashboard_id DESC')
-                ->limit(1);
-
-            $dashboard = $this->getDb()->select($select)->fetch();
-
-            return $dashboard->dashboard_id;
-        } else {
-            return $id;
-        }
+        return $db->lastInsertId();
     }
 
     /**
@@ -159,12 +71,11 @@ abstract class DashboardsForm extends CompatForm
     public function checkForPrivateDashboard($id)
     {
         $select = (new Select())
-            ->from('user_dashboard')
+            ->from('dashboard')
             ->columns('*')
-            ->join('dashboard d', 'user_dashboard.dashboard_id = d.id')
             ->where([
-                'dashboard_id = ?' => $id,
-                'd.type = ?' => 'private'
+                'id = ?' => $id,
+                'type = ?' => 'private'
             ]);
 
         $dashboard = $this->getDb()->select($select)->fetch();
@@ -182,39 +93,43 @@ abstract class DashboardsForm extends CompatForm
     public function displayForm()
     {
         $this->addElement('textarea', 'url', [
-            'label' => 'Url',
-            'placeholder' => 'Enter Dashlet Url',
-            'required' => true,
-            'rows' => '3'
+            'label'         => 'Url',
+            'placeholder'   => 'Enter Dashlet Url',
+            'required'      => true,
+            'rows'          => '3'
         ]);
 
         $this->addElement('text', 'name', [
-            'label' => 'Dashlet Name',
-            'placeholder' => 'Enter Dashlet Name',
-            'required' => true
+            'label'         => 'Dashlet Name',
+            'placeholder'   => 'Enter Dashlet Name',
+            'required'      => true
         ]);
 
         $this->addElement('checkbox', 'new-dashboard', [
-            'label' => 'New Dashboard',
-            'class' => 'autosubmit',
+            'label'         => 'New Dashboard',
+            'class'         => 'autosubmit',
         ]);
 
-        $this->addElement('checkbox', 'user-dashboard', [
-            'label' => 'Private Dashboard',
-            'class' => 'autosubmit',
+        $this->addElement('select', 'dashboard-type', [
+            'label'         => 'Dashboard Type',
+            'required'      => true,
+            'options'       => [
+                'system'    => 'system',
+                'private'   => 'private'
+            ]
         ]);
 
         if ($this->getElement('new-dashboard')->getValue() === 'y') {
             $this->addElement('text', 'new-dashboard-name', [
-                'label' => 'Dashboard Name',
-                'placeholder' => 'New Dashboard Name',
-                'required' => true,
+                'label'         => 'Dashboard Name',
+                'placeholder'   => 'New Dashboard Name',
+                'required'      => true,
             ]);
         } else {
             $this->addElement('select', 'dashboard', [
-                'label' => 'Dashboard',
-                'required' => true,
-                'options' => $this->fetchDashboards()
+                'label'         => 'Dashboard',
+                'required'      => true,
+                'options'       => $this->fetchDashboardsForSelectOption()
             ]);
         }
     }

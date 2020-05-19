@@ -37,20 +37,7 @@ class DashletsController extends Controller
     public function editAction()
     {
         $dashletId = $this->params->getRequired('dashletId');
-        $dashboardId = $this->params->getRequired('dashboardId');
-
         $this->tabs->disableLegacyExtensions();
-
-        $select = (new Select())
-            ->from('dashlet')
-            ->columns('*')
-            ->join('user_dashlet ud', 'ud.dashlet_id = dashlet.id')
-            ->where([
-                'id = ?' => $dashletId,
-                'ud.user_dashboard_id = ?' => $dashboardId
-            ]);
-
-        $userDashlet = $this->getDb()->select($select)->fetch();
 
         $query = (new Select())
             ->from('dashlet')
@@ -59,20 +46,9 @@ class DashletsController extends Controller
 
         $dashlet = $this->getDb()->select($query)->fetch();
 
-        $selectPrivateDashboard = (new Select())
-            ->from('dashboard')
-            ->columns('*')
-            ->where(['type = ?' => 'private', 'id = ?' => $dashboardId]);
+        $this->setTitle($this->translate('Edit Dashlet: %s'), $dashlet->name);
 
-        $dashboard = $this->getDb()->select($selectPrivateDashboard)->fetch();
-
-        if ($dashboard) {
-            $this->setTitle($this->translate('Edit Dashlet: %s'), $userDashlet->name);
-        } else {
-            $this->setTitle($this->translate('Edit Dashlet: %s'), $dashlet->name);
-        }
-
-        $form = (new EditDashletForm($dashlet, $userDashlet))
+        $form = (new EditDashletForm($dashlet))
             ->on(EditDashletForm::ON_SUCCESS, function () {
                 $this->redirectNow('dashboards/settings');
             })

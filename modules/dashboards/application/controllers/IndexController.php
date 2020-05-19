@@ -26,20 +26,13 @@ class IndexController extends Controller
         }
 
         $select = (new Select())
-            ->columns([
-                'dashlet.id',
-                'dashlet.name',
-                'dashlet.dashboard_id',
-                'dashlet.url',
-                'dashlet.style_width',
-                'dashlet.priority'
-            ])
+            ->columns('*')
             ->from('dashlet')
-            ->join('dashboard d', 'dashlet.dashboard_id = d.id')
             ->where([
-                'd.id = ?' => $this->tabs->getActiveName()
+                'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
+                'dashlet.type = "system" OR dashlet.owner = ?' => Auth::getInstance()->getUser()->getUsername()
             ])
-            ->orderBy('priority', 'DESC');
+            ->orderBy('dashlet.id');
 
         $dashlets = $this->getDb()->select($select);
 
@@ -56,19 +49,15 @@ class IndexController extends Controller
      */
     protected function createTabsAndAutoActivateDashboard()
     {
-        $privateIds = [];
-        $publicIds = [];
-
         $tabs = $this->getTabs();
 
         $select = (new Select())
             ->columns('*')
             ->from('dashboard')
-            ->join('user_dashboard', 'user_dashboard.dashboard_id = dashboard.id')
             ->where([
-                'type = ?' => 'private',
-                'user_dashboard.user_name = ?' => Auth::getInstance()->getUser()->getUsername()
-            ]);
+                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+            ])
+            ->orderBy('dashboard.id');
 
         $dashboards = $this->getDb()->select($select);
 
@@ -80,28 +69,8 @@ class IndexController extends Controller
                 ])
             ])->extend(new DashboardAction())->disableLegacyExtensions();
 
-            $privateIds[] = $dashboard->id;
+            $ids[] = $dashboard->id;
         }
-
-        $select = (new Select())
-            ->columns('*')
-            ->from('dashboard')
-            ->where(['type = ?' => 'public']);
-
-        $dashboards = $this->getDb()->select($select);
-
-        foreach ($dashboards as $dashboard) {
-            $tabs->add($dashboard->id, [
-                'label' => $dashboard->name,
-                'url' => Url::fromPath('dashboards', [
-                    'dashboard' => $dashboard->id
-                ])
-            ])->extend(new DashboardAction())->disableLegacyExtensions();
-
-            $publicIds[] = $dashboard->id;
-        }
-
-        $ids = array_merge($privateIds, $publicIds);
 
         $id = $this->params->get('dashboard') ?: array_shift($ids);
 

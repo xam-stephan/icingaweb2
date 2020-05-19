@@ -31,28 +31,14 @@ class DashletForm extends DashboardsForm
     protected function onSuccess()
     {
         if ($this->getValue('new-dashboard-name') !== null) {
-            $this->getDb()->insert('dashlet', [
-                'dashboard_id'  => $this->createDashboard($this->getValue('new-dashboard-name')),
-                'name'          => $this->getValue('name'),
-                'url'           => $this->getValue('url'),
-                'type'          => $this->getValue('dashboard-type'),
-                'owner'         => $this->getValue('dashboard-type') === 'private'?
-                    Auth::getInstance()->getUser()->getUsername(): null
-            ]);
+            $this->insertIntoDashlet($this->createDashboard($this->getValue('new-dashboard-name')));
 
             Notification::success("Dashboard and dashlet created");
         } elseif ($this->checkForPrivateDashboard($this->getValue('dashboard')) &&
             $this->getValue('dashboard-type') === 'system') {
             Notification::error("Public dashlets in a private dashboard are not allowed!");
         } else {
-            $this->getDb()->insert('dashlet', [
-                'dashboard_id'  => $this->getValue('dashboard'),
-                'name'          => $this->getValue('name'),
-                'url'           => $this->getValue('url'),
-                'type'          => $this->getValue('dashboard-type'),
-                'owner'         => $this->getValue('dashboard-type') === 'private'?
-                    Auth::getInstance()->getUser()->getUsername(): null
-            ]);
+            $this->insertIntoDashlet($this->getValue('dashboard'));
 
             Notification::success("Dashlet created!");
         }

@@ -69,7 +69,6 @@ class EditDashletForm extends DashboardsForm
         } elseif ($this->dashboard->type !== $this->getValue('dashboard-type') &&
             $this->dashboard->id == $this->getValue('dashboard') &&
             $this->checkForPublicDashlet($this->getValue('dashboard'))) {
-
             Notification::error("You have public dashlets in there!");
         } else {
             if ($this->dashboard->type !== $this->getValue('dashboard-type') &&

@@ -52,7 +52,7 @@ abstract class DashboardsForm extends CompatForm
             'name'  => $name,
             'type'  => $this->getValue('dashboard-type'),
             'owner' => $this->getValue('dashboard-type') === 'private'?
-                Auth::getInstance()->getUser()->getUsername(): NULL
+                Auth::getInstance()->getUser()->getUsername(): null
         ];
 
         $db = $this->getDb();

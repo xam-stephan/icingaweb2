@@ -13,7 +13,7 @@ class EditDashletForm extends DashboardsForm
     /** @var object $dashlet of the selected dashboard */
     protected $dashlet;
 
-    protected $userDashlet;
+    protected $dashboard;
 
     /**
      * get a dashlet based on the current dashboard / the activated dashboard
@@ -21,25 +21,18 @@ class EditDashletForm extends DashboardsForm
      * and populate it's details to the dashlet form to be edited dashlet or dashboard
      *
      * @param null $dashlet
-     *
-     * @param null $userDashlet
      */
-    public function __construct($dashlet = null, $userDashlet = null)
+    public function __construct($dashlet, $dashboard)
     {
         $this->dashlet = $dashlet;
-        $this->userDashlet = $userDashlet;
+        $this->dashboard = $dashboard;
 
         if (! empty($dashlet)) {
             $this->populate([
                 'url' => $dashlet->url,
-                'name' => $dashlet->name
-            ]);
-        }
-
-        if (! empty($userDashlet)) {
-            $this->populate([
-                'url' => $userDashlet->url,
-                'name' => $userDashlet->name,
+                'name' => $dashlet->name,
+                'dashboard-type' => $dashboard->type,
+                'dashboard'      => $dashboard->id
             ]);
         }
     }
@@ -63,49 +56,32 @@ class EditDashletForm extends DashboardsForm
 
     protected function onSuccess()
     {
-        if (! empty($this->userDashlet) && $this->checkForPrivateDashboard($this->getValue('dashboard'))) {
-            if (! empty($this->getValue('new-dashboard-name'))) {
-                $this->getDb()->update('dashlet', [
-                    'dashboard_id' => $this->fetchUserDashboardId($this->getValue('new-dashboard-name')),
-                    'name' => $this->getValue('name'),
-                    'url' => $this->getValue('url')
-                ], ['id = ?' => $this->userDashlet->id]);
+        if (! empty($this->getValue('new-dashboard-name'))) {
+            $this->updateDashletTable(
+                $this->dashlet,
+                $this->createDashboard($this->getValue('new-dashboard-name')));
 
-                $this->getDb()->update('user_dashlet', [
-                    'dashlet_id' => $this->userDashlet->id,
-                    'user_dashboard_id' => $this->fetchUserDashboardId($this->getValue('new-dashboard-name'))
-                ]);
+            Notification::success('Dashboard created & dashlet updated');
+        } elseif ($this->checkForPrivateDashboard($this->getValue('dashboard')) &&
+            $this->getValue('dashboard-type') === 'system') {
+            Notification::error("Public dashlet in a private dashboard not allowed!");
+        } elseif ($this->dashboard->type !== $this->getValue('dashboard-type') &&
+            $this->dashboard->id == $this->getValue('dashboard') &&
+            $this->checkForPublicDashlet($this->getValue('dashboard'))) {
 
-                Notification::success('Private Dashboard created & dashlet updated');
-            } else {
-                $this->getDb()->update('dashlet', [
-                    'dashboard_id' => $this->fetchUserDashboardId($this->getValue('dashboard')),
-                    'name' => $this->getValue('name'),
-                    'url' => $this->getValue('url'),
-                ], ['id = ?' => $this->userDashlet->id]);
+            Notification::error("You have public dashlets in there!");
+        } else {
+            if ($this->dashboard->type !== $this->getValue('dashboard-type') &&
+                $this->dashboard->id == $this->getValue('dashboard') &&
+                ! $this->checkForPublicDashlet($this->getValue('dashboard'))) {
+                $this->updateDashboardTable($this->dashboard, $this->getValue('dashboard'));
 
-                Notification::success('Private dashlet updated');
+                Notification::success("Dashboard type updated!");
             }
-        }
 
-        if (! empty($this->dashlet)) {
-            if (! empty($this->getValue('new-dashboard-name'))) {
-                $this->getDb()->update('dashlet', [
-                    'dashboard_id' => $this->createDashboard($this->getValue('new-dashboard-name')),
-                    'name' => $this->getValue('name'),
-                    'url' => $this->getValue('url')
-                ], ['id = ?' => $this->dashlet->id]);
+            $this->updateDashletTable($this->dashlet, $this->getValue('dashboard'));
 
-                Notification::success('Dashboard created & dashlet updated');
-            } else {
-                $this->getDb()->update('dashlet', [
-                    'dashboard_id' => $this->getValue('dashboard'),
-                    'name' => $this->getValue('name'),
-                    'url' => $this->getValue('url'),
-                ], ['id = ?' => $this->dashlet->id]);
-
-                Notification::success('Dashlet updated');
-            }
+            Notification::success('Dashlet updated');
         }
     }
 }

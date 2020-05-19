@@ -61,6 +61,16 @@ abstract class DashboardsForm extends CompatForm
         return $db->lastInsertId();
     }
 
+    public function updateDashboardTable($dashboard, $id)
+    {
+        $this->getDb()->update('dashboard', [
+            'name'      => $dashboard->name,
+            'type'      => $this->getValue('dashboard-type'),
+            'owner'     => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername() : null
+        ], ['id = ?'    => $id]);
+    }
+
     /**
      * Check if the selected dashboard is private or not
      *
@@ -85,6 +95,50 @@ abstract class DashboardsForm extends CompatForm
         } else {
             return false;
         }
+    }
+
+    public function checkForPublicDashlet($id)
+    {
+        $select = (new Select())
+            ->from('dashlet')
+            ->columns('*')
+            ->where([
+                'dashlet.dashboard_id = ?' => $id,
+                'dashlet.type = "system"'
+            ]);
+
+        $dashlet = $this->getDb()->select($select)->fetch();
+
+        if ($dashlet) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function insertIntoDashlet($id)
+    {
+        $this->getDb()->insert('dashlet', [
+            'dashboard_id'  => $id,
+            'name'          => $this->getValue('name'),
+            'url'           => $this->getValue('url'),
+            'type'          => $this->getValue('dashboard-type'),
+            'owner'         => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername(): null
+        ]);
+    }
+
+    public function updateDashletTable($dashlet, $id)
+    {
+        $this->getDb()->update('dashlet', [
+            'dashboard_id'  => $id,
+            'name'          => $this->getValue('name'),
+            'url'           => $this->getValue('url'),
+            'type'          => $this->getValue('dashboard-type'),
+            'owner'         => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername() : null
+        ], ['id = ?'        => $dashlet->id]);
+
     }
 
     /**

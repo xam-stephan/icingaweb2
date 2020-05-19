@@ -138,7 +138,6 @@ abstract class DashboardsForm extends CompatForm
             'owner'         => $this->getValue('dashboard-type') === 'private'?
                 Auth::getInstance()->getUser()->getUsername() : null
         ], ['id = ?'        => $dashlet->id]);
-
     }
 
     /**

@@ -59,7 +59,8 @@ class EditDashletForm extends DashboardsForm
         if (! empty($this->getValue('new-dashboard-name'))) {
             $this->updateDashletTable(
                 $this->dashlet,
-                $this->createDashboard($this->getValue('new-dashboard-name')));
+                $this->createDashboard($this->getValue('new-dashboard-name'))
+            );
 
             Notification::success('Dashboard created & dashlet updated');
         } elseif ($this->checkForPrivateDashboard($this->getValue('dashboard')) &&

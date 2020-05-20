@@ -37,6 +37,7 @@ class DashletsController extends Controller
     public function editAction()
     {
         $dashletId = $this->params->getRequired('dashletId');
+        $dashboardId = $this->params->getRequired('dashboardId');
         $this->tabs->disableLegacyExtensions();
 
         $query = (new Select())
@@ -46,9 +47,16 @@ class DashletsController extends Controller
 
         $dashlet = $this->getDb()->select($query)->fetch();
 
+        $select = (new Select())
+            ->from('dashboard')
+            ->columns('*')
+            ->where(['id = ?' => $dashboardId]);
+
+        $dashboard = $this->getDb()->select($select)->fetch();
+
         $this->setTitle($this->translate('Edit Dashlet: %s'), $dashlet->name);
 
-        $form = (new EditDashletForm($dashlet))
+        $form = (new EditDashletForm($dashlet, $dashboard))
             ->on(EditDashletForm::ON_SUCCESS, function () {
                 $this->redirectNow('dashboards/settings');
             })

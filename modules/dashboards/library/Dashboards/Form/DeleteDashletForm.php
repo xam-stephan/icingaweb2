@@ -2,7 +2,9 @@
 
 namespace Icinga\Module\Dashboards\Form;
 
+use Icinga\Authentication\Auth;
 use Icinga\Module\Dashboards\Common\Database;
+use Icinga\Web\Notification;
 use ipl\Html\Html;
 use ipl\Web\Compat\CompatForm;
 
@@ -45,6 +47,10 @@ class DeleteDashletForm extends CompatForm
 
     protected function onSuccess()
     {
-        $this->getDb()->delete('dashlet', ['id = ?' => $this->dashlet->id]);
+        if ($this->dashlet->type === "system" && ! Auth::getInstance()->getUser()->isMemberOf('admin')) {
+            Notification::error("You are not allowed to delete this dashlet!");
+        } else {
+            $this->getDb()->delete('dashlet', ['id = ?' => $this->dashlet->id]);
+        }
     }
 }

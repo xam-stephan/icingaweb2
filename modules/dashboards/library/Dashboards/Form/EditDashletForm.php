@@ -65,11 +65,11 @@ class EditDashletForm extends DashboardsForm
             Notification::success('Dashboard created & dashlet updated');
         } elseif ($this->checkForPrivateDashboard($this->getValue('dashboard')) &&
             $this->getValue('dashboard-type') === 'system') {
-            Notification::error("Public dashlet in a private dashboard not allowed!");
+            Notification::error("Public dashlets in a private dashboard are not allowed!");
         } elseif ($this->dashboard->type !== $this->getValue('dashboard-type') &&
             $this->dashboard->id == $this->getValue('dashboard') &&
             $this->checkForPublicDashlet($this->getValue('dashboard'))) {
-            Notification::error("You have public dashlets in there!");
+            Notification::error("Action denied, the dashboard has a public dashlet!");
         } else {
             if ($this->dashboard->type !== $this->getValue('dashboard-type') &&
                 $this->dashboard->id == $this->getValue('dashboard') &&

@@ -25,18 +25,16 @@ class DeleteDashletForm extends CompatForm
 
     protected function assemble()
     {
-        if (! empty($this->dashlet)) {
-            $this->add(
-                Html::tag(
-                    'h1',
-                    null,
-                    Html::sprintf(
-                        'Please confirm deletion of dashlet %s',
-                        $this->dashlet->name
-                    )
+        $this->add(
+            Html::tag(
+                'h1',
+                null,
+                Html::sprintf(
+                    'Please confirm deletion of dashlet \'%s\'',
+                    $this->dashlet->name
                 )
-            );
-        }
+            )
+        );
 
         $this->addElement('input', 'btn_submit', [
             'type' => 'submit',
@@ -47,9 +45,6 @@ class DeleteDashletForm extends CompatForm
 
     protected function onSuccess()
     {
-        if (! empty($this->dashlet)) {
-            $this->getDb()->delete('user_dashlet', ['dashlet_id = ?' => $this->dashlet->id]);
-            $this->getDb()->delete('dashlet', ['id = ?' => $this->dashlet->id]);
-        }
+        $this->getDb()->delete('dashlet', ['id = ?' => $this->dashlet->id]);
     }
 }

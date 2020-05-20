@@ -47,14 +47,12 @@ class DeleteDashboardForm extends CompatForm
 
     protected function onSuccess()
     {
-        $user = Auth::getInstance()->getUser()->getUsername();
-
         if ($this->dashboard->type === 'system' && ! Auth::getInstance()->getUser()->isMemberOf('admin')) {
             throw new SystemPermissionException("You don't have a permission to delete public dashboards!");
         } elseif (Auth::getInstance()->getUser()->isMemberOf('admin')) {
             $this->getDb()->delete('dashlet', ['dashboard_id = ?' => $this->dashboard->id]);
             $this->getDb()->delete('dashboard', ['id = ?' => $this->dashboard->id]);
-        } elseif ($this->dashboard->type === 'private' && $this->dashboard->owner === $user) {
+        } else {
             $this->getDb()->delete('dashlet', ['dashboard_id = ?' => $this->dashboard->id]);
             $this->getDb()->delete('dashboard', ['id = ?' => $this->dashboard->id]);
         }

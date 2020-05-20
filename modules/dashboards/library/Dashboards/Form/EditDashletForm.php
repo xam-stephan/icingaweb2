@@ -10,17 +10,20 @@ class EditDashletForm extends DashboardsForm
 {
     use Database;
 
+    /** @var object $dashboard from which the dashlet comes from */
+    protected $dashboard;
+
     /** @var object $dashlet of the selected dashboard */
     protected $dashlet;
 
-    protected $dashboard;
-
     /**
-     * get a dashlet based on the current dashboard / the activated dashboard
+     * get a dashlet from the selected dashboard
      *
-     * and populate it's details to the dashlet form to be edited dashlet or dashboard
+     * and populate it's details to the dashlet form
      *
-     * @param null $dashlet
+     * @param $dashlet
+     *
+     * @param $dashboard
      */
     public function __construct($dashlet, $dashboard)
     {

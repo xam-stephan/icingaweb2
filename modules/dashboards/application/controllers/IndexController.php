@@ -34,7 +34,7 @@ class IndexController extends Controller
                 'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
                 'duo.username IS NULL OR duo.username = ?' => Auth::getInstance()->getUser()->getUsername()
             ])
-            ->orderBy('do.order, dashlet.id');
+            ->orderBy('do.order', 'DESC');
 
         $dashlets = $this->getDb()->select($select);
 

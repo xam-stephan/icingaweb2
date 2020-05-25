@@ -3,6 +3,7 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use GuzzleHttp\Psr7\ServerRequest;
+use Icinga\Authentication\Auth;
 use Icinga\Module\Dashboards\Common\Database;
 use Icinga\Module\Dashboards\Form\DashletForm;
 use Icinga\Module\Dashboards\Form\DeleteDashboardForm;
@@ -138,11 +139,26 @@ class DashletsController extends Controller
 
             if ($dashletPriority > 0) {
                 foreach ($dashletIds as $dashletId) {
-                    $this->getDb()->update(
-                        'dashlet',
-                        ['priority' => $dashletPriority--],
-                        ['id = ?' => $dashletId]
-                    );
+                    $select = (new Select())
+                        ->columns('*')
+                        ->from('dashlet')
+                        ->where(['id = ?' => $dashletId, 'type = "system"']);
+
+                    $dashlet = $this->getDb()->select($select)->fetch();
+
+                    if ($dashlet) {
+                        $this->getDb()->update(
+                            'dashlet_order',
+                            ['`order`' => $dashletPriority--],
+                            ['dashlet_id = ?' => $dashletId]
+                        );
+                    } else {
+                        $this->getDb()->update(
+                            'dashlet_user_order',
+                            ['`order`' => $dashletPriority--],
+                            ['dashlet_id = ?' => $dashletId]
+                        );
+                    }
                 }
             }
         }

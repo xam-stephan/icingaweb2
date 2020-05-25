@@ -3,7 +3,6 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use Icinga\Authentication\Auth;
-use Icinga\Exception\NotFoundError;
 use Icinga\Module\Dashboards\Common\Database;
 use Icinga\Module\Dashboards\Web\Controller;
 use Icinga\Module\Dashboards\Web\Widget\CreateDefaultDashlets;

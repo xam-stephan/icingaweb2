@@ -61,6 +61,23 @@ abstract class DashboardsForm extends CompatForm
         return $db->lastInsertId();
     }
 
+    public function insertIntoDashlet($id)
+    {
+        $data = [
+            'dashboard_id'  => $id,
+            'name'          => $this->getValue('name'),
+            'url'           => $this->getValue('url'),
+            'type'          => $this->getValue('dashboard-type'),
+            'owner'         => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername(): null
+        ];
+
+        $db = $this->getDb();
+        $db->insert('dashlet', $data);
+
+        return $db->lastInsertId();
+    }
+
     public function updateDashboardTable($dashboard, $id)
     {
         $this->getDb()->update('dashboard', [
@@ -69,6 +86,18 @@ abstract class DashboardsForm extends CompatForm
             'owner'     => $this->getValue('dashboard-type') === 'private'?
                 Auth::getInstance()->getUser()->getUsername() : null
         ], ['id = ?'    => $id]);
+    }
+
+    public function updateDashletTable($dashlet, $id)
+    {
+        $this->getDb()->update('dashlet', [
+            'dashboard_id'  => $id,
+            'name'          => $this->getValue('name'),
+            'url'           => $this->getValue('url'),
+            'type'          => $this->getValue('dashboard-type'),
+            'owner'         => $this->getValue('dashboard-type') === 'private'?
+                Auth::getInstance()->getUser()->getUsername() : null
+        ], ['id = ?'        => $dashlet->id]);
     }
 
     /**
@@ -114,30 +143,6 @@ abstract class DashboardsForm extends CompatForm
         } else {
             return false;
         }
-    }
-
-    public function insertIntoDashlet($id)
-    {
-        $this->getDb()->insert('dashlet', [
-            'dashboard_id'  => $id,
-            'name'          => $this->getValue('name'),
-            'url'           => $this->getValue('url'),
-            'type'          => $this->getValue('dashboard-type'),
-            'owner'         => $this->getValue('dashboard-type') === 'private'?
-                Auth::getInstance()->getUser()->getUsername(): null
-        ]);
-    }
-
-    public function updateDashletTable($dashlet, $id)
-    {
-        $this->getDb()->update('dashlet', [
-            'dashboard_id'  => $id,
-            'name'          => $this->getValue('name'),
-            'url'           => $this->getValue('url'),
-            'type'          => $this->getValue('dashboard-type'),
-            'owner'         => $this->getValue('dashboard-type') === 'private'?
-                Auth::getInstance()->getUser()->getUsername() : null
-        ], ['id = ?'        => $dashlet->id]);
     }
 
     /**

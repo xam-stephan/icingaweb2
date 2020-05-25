@@ -26,13 +26,15 @@ class IndexController extends Controller
         }
 
         $select = (new Select())
-            ->columns('*')
+            ->columns('dashlet.*, do.`order`')
+            ->joinLeft('dashlet_order do', 'do.dashlet_id = dashlet.id')
+            ->joinLeft('dashlet_user_order duo', 'duo.dashlet_id = dashlet.id')
             ->from('dashlet')
             ->where([
                 'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
-                'dashlet.type = "system" OR dashlet.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+                'duo.username IS NULL OR duo.username = ?' => Auth::getInstance()->getUser()->getUsername()
             ])
-            ->orderBy('dashlet.id');
+            ->orderBy('do.order, dashlet.id');
 
         $dashlets = $this->getDb()->select($select);
 
@@ -52,12 +54,15 @@ class IndexController extends Controller
         $tabs = $this->getTabs();
 
         $select = (new Select())
-            ->columns('*')
+            ->columns('dashboard.*, do.`order`')
             ->from('dashboard')
+            ->joinLeft('dashboard_order do', 'do.dashboard_id = dashboard.id')
+            ->joinLeft('dashboard_user_order duo', 'duo.dashboard_id = dashboard.id')
             ->where([
-                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername(),
+                'duo.username IS NULL OR duo.username = ?' => Auth::getInstance()->getUser()->getUsername()
             ])
-            ->orderBy('dashboard.id');
+            ->orderBy('do.`order`, dashboard.id');
 
         $dashboards = $this->getDb()->select($select);
 

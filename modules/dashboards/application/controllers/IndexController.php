@@ -25,8 +25,18 @@ class IndexController extends Controller
             Notification::error('No dashboard or dashlet found');
         }
 
+        $query = (new Select())
+            ->columns('*')
+            ->from('dashboard')
+            ->where(['id = ?' => $this->tabs->getActiveName(), 'type = ?' => 'system']);
+
+        $dashboard = $this->getDb()->select($query)->fetch();
+
+        //Note: In private dashboards type, the dashlets are sorted by user_dashlets_order
+        // and in system dashboards the private dashlets are always sorted according to the public dashlets
+        //TODO: If you want to have the dashlets the other way around, you just have to adjust the function call orderBy
         $select = (new Select())
-            ->columns('dashlet.*, do.`order`')
+            ->columns('dashlet.*')
             ->joinLeft('dashlet_order do', 'do.dashlet_id = dashlet.id')
             ->joinLeft('dashlet_user_order duo', 'duo.dashlet_id = dashlet.id')
             ->from('dashlet')
@@ -34,7 +44,7 @@ class IndexController extends Controller
                 'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
                 'duo.username IS NULL OR duo.username = ?' => Auth::getInstance()->getUser()->getUsername()
             ])
-            ->orderBy('do.order', 'DESC');
+            ->orderBy($dashboard ? 'do.order' : 'duo.order', 'DESC');
 
         $dashlets = $this->getDb()->select($select);
 

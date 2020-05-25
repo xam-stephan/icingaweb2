@@ -3,11 +3,12 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use Icinga\Authentication\Auth;
+use Icinga\Exception\NotFoundError;
 use Icinga\Module\Dashboards\Common\Database;
 use Icinga\Module\Dashboards\Web\Controller;
+use Icinga\Module\Dashboards\Web\Widget\CreateDefaultDashlets;
 use Icinga\Module\Dashboards\Web\Widget\Tabextension\DashboardAction;
 use Icinga\Module\Dashboards\Web\Widget\DashboardWidget;
-use Icinga\Web\Notification;
 use Icinga\Web\Url;
 use ipl\Sql\Select;
 
@@ -20,9 +21,8 @@ class IndexController extends Controller
         try {
             $this->createTabsAndAutoActivateDashboard();
         } catch (\Exception $e) {
-            $this->tabs->extend(new DashboardAction())->disableLegacyExtensions();
-
-            Notification::error('No dashboard or dashlet found');
+            CreateDefaultDashlets::createAction();
+            $this->createTabsAndAutoActivateDashboard();
         }
 
         $query = (new Select())

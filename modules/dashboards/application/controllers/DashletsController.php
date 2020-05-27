@@ -3,7 +3,6 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use GuzzleHttp\Psr7\ServerRequest;
-use Icinga\Authentication\Auth;
 use Icinga\Module\Dashboards\Common\Database;
 use Icinga\Module\Dashboards\Form\DashletForm;
 use Icinga\Module\Dashboards\Form\DeleteDashboardForm;
@@ -127,7 +126,8 @@ class DashletsController extends Controller
     }
 
     /**
-     * Get the request param $dashletIds and update the dashlet priority
+     * Receive the request ids from the dropped dashlet and
+     * from the dashlet in the drop target then save the new dashlets position
      */
     public function dropAction()
     {

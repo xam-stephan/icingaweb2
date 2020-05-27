@@ -21,13 +21,41 @@
         initialize: function()
         {
             this.module.on('rendered', '.container', this.onRendered);
+            this.module.on('dblclick', '#editMode', this.removeEvents);
+            this.module.on('click', '#editMode', this.makeDashletsDraggable);
             this.module.on("dragstart", '.dashlet-sortable', this.onDragStart);
             this.module.on("dragend", '.dashlet-sortable', this.onDragend);
             this.module.on("dragleave", '.dashlet-sortable', this.onDragLeave);
             this.module.on("dragover",'.dashlet-sortable', this.onDragOver);
             this.module.on("drop",'.dashlet-sortable', this.onDrop);
-            this.module.on('click', 'button', this.updateDashletsWidth);
+            this.module.on('click', '#editMode', this.updateDashletsWidth);
             this.module.icinga.logger.debug('Dashboards module loaded');
+        },
+
+        makeDashletsDraggable: function() {
+            document.getElementById('editMode').innerHTML = 'Save Mode';
+            document.querySelectorAll('.dashboard .dashlet-sortable')
+                .forEach(function (event) {
+                    // Make the dashlets draggable
+                    event.setAttribute('draggable', 'true');
+                    // Make a div resizable when the Try it button is pressed
+                    event.setAttribute('style', 'resize: both;')
+                    // Add some css style classes
+                    event.classList.add('while-hover')
+                    event.classList.add('while-resize')
+                });
+        },
+
+        removeEvents: function () {
+            document.getElementById('editMode').innerHTML = 'Edit Mode';
+            document.querySelectorAll('.dashboard .dashlet-sortable')
+                .forEach(function (event) {
+                    // Remove all events when the editMode button is pressed twice
+                    event.removeAttribute('draggable')
+                    event.removeAttribute('style')
+                    event.classList.remove('while-hover')
+                    event.classList.remove('while-resize')
+                });
         },
 
         /**
@@ -142,7 +170,7 @@
             let $dashlets = this.getDashlets($(event.target));
 
             // Make a div resizable when the Try it button is pressed
-            this.getDashlets($dashlets).css({resize: 'both'});
+            //this.getDashlets($dashlets).css({resize: 'both'});
 
             this.getDashlets($dashlets).on('mousedown', function () {
                 let $dashlet = $(this);

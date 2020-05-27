@@ -57,8 +57,9 @@ class DashboardWidget extends BaseHtmlElement
             [
                 'id' => 'editMode',
                 'class' => 'button-link',
-            ], t('Edit Mode')))
-        );
+            ],
+            t('Edit Mode')
+        )));
 
         foreach ($this->dashlets as $dashlet) {
             if (! in_array($dashlet->name, $dashlets)) {

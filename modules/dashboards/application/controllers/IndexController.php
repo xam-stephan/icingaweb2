@@ -64,7 +64,8 @@ class IndexController extends Controller
         $query->unionAll($select)
             ->joinLeft(
                 'dashboard_home_order dho',
-                ['dho.home = dashboard_home.name AND dho.user = ?' => Auth::getInstance()->getUser()->getUsername()])
+                ['dho.home = dashboard_home.name AND dho.user = ?' => Auth::getInstance()->getUser()->getUsername()]
+            )
             ->groupBy('dashboard_home.name, dho.`order`')
             ->orderBy('dho.`order`, dashboard_home.name');
 

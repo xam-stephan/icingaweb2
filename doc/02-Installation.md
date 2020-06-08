@@ -271,7 +271,7 @@ of the Apache module.
 
 | Operating System    | FPM configuration path            |
 |---------------------|-----------------------------------|
-| RedHat 8            | `/etc/php-frpm.d/`                |
+| RedHat 8            | `/etc/php-fpm.d/`                |
 | RedHat 7 (with SCL) | `/etc/opt/rh/rh-php71/php-fpm.d/` |
 | Fedora              | `/etc/php-fpm.d/`                 |
 | Debian/Ubuntu       | `/etc/php*/*/fpm/pool.d/`         |
@@ -329,9 +329,9 @@ In case you do not remember the token you can show it using the `icingacli`:
 icingacli setup token show
 ```
 
-#### Preparing Web Setup on Debian <a id="preparing-web-setup-from-package-debian"></a>
+#### Preparing Web Setup on Debian/Ubuntu <a id="preparing-web-setup-from-package-debian"></a>
 
-On Debian, you need to manually create a database and a database user prior to starting the web wizard.
+On Debian and derivates, you need to manually create a database and a database user prior to starting the web wizard.
 This is due to local security restrictions whereas the web wizard cannot create a database/user through
 a local unix domain socket.
 
@@ -350,7 +350,7 @@ You may also create a separate administrative account with all privileges instea
 Finally visit Icinga Web 2 in your browser to access the setup wizard and complete the installation:
 `/icingaweb2/setup`.
 
-> **Note for Debian**
+> **Note for Debian/Ubuntu**
 >
 > Use the same database, user and password details created above when asked.
 

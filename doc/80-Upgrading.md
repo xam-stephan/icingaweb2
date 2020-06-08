@@ -1,10 +1,60 @@
 # Upgrading Icinga Web 2 <a id="upgrading"></a>
 
-Upgrading Icinga Web 2 is quite straightforward. Usually the only manual steps involved are schema updates for the
-Icinga Web 2 database.
+Specific version upgrades are described below. Please note that upgrades are incremental. An upgrade from
+v2.6 to v2.8 requires to follow the instructions for v2.7 too.
 
-Specific version upgrades are described below. Please note that version updates are incremental. An upgrade from
-v2.3 to v2.5 requires to follow the instructions for v2.4 too.
+## Upgrading to Icinga Web 2 2.8.x
+
+**Changes in packaging and dependencies**
+
+Valid for distributions:
+
+* RHEL / CentOS 7
+  * Upgrade to PHP 7.3 via RedHat SCL
+
+After upgrading to version 2.8.0 you'll get the new `rh-php73` dependency installed. This is a drop-in replacement
+for the previous `rh-php71` dependency and only requires the setup of a new fpm service and possibly some copying
+of customized configurations.
+
+**php.ini or php-fpm settings** you have tuned in the past need to be copied over to the new path:
+
+From `/etc/opt/rh/rh-php71/` to `/etc/opt/rh/rh-php73/`.
+
+Don't forget to also install any additional **php-modules** for PHP 7.3 you've had previously installed
+for e.g. Icinga Web 2 modules.
+
+There's also a new **service** included which replaces the previous one for php-fpm:
+
+Stop the old service: `systemctl stop rh-php71-php-fpm.service`  
+Start the new service: `systemctl start rh-php73-php-fpm.service`
+
+You can now safely remove the previous dependency if you like:
+
+`yum remove rh-php71*`
+
+**Discontinued package updates**
+
+Icinga Web 2 v2.8+ is not supported on these platforms:
+
+* RHEL / CentOS 6
+* Debian 8 Jessie
+* Ubuntu 16.04 LTS (Xenial Xerus)
+
+Please consider an upgrade of your central Icinga system to a newer distribution release.
+
+[icinga.com](https://icinga.com/subscription/support-details/) provides an overview about
+currently supported distributions.
+
+**Framework changes affecting third-party code**
+
+* Url parameter `view=compact` is now deprecated. `showCompact` should be used instead.
+  Details are in pull request [#4164](https://github.com/Icinga/icingaweb2/pull/4164).
+* Form elements of type checkbox now need to be checked prior submission if they're
+  required. Previously setting `required => true` didn't cause the browser to complain
+  if such a checkbox wasn't checked. Browsers now do complain if so.
+* The general layout now uses flexbox instead of fixed positioning. This applies to the
+  `#header`, `#sidebar`, `#main`, `#footer`, `#col1`, `#col2` and a column's controls.
+  `#sidebar` and `#main` are now additionally wrapped in a new container `#content-wrapper`.
 
 ## Upgrading to Icinga Web 2 2.7.x <a id="upgrading-to-2.7.x"></a>
 

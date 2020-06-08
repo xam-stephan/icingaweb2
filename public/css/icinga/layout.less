@@ -161,7 +161,8 @@
 }
 
 .container,
-.error-message {
+.error-message,
+.modal-window {
   // Don't outline containers and error messages when focused because they receive focus for accessibility only
   // programmatically
   outline: none;
@@ -171,14 +172,6 @@
   > .tabs {
     overflow: hidden;
   }
-}
-
-// Display tabs if JS is disabled
-html.no-js .controls > .tabs {
-  background-color: @icinga-blue;
-  margin-left: -1 * @gutter;
-  margin-right: -1 * @gutter;
-  margin-top: -1 * @gutter;
 }
 
 // Dashboard grid

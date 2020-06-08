@@ -5,10 +5,6 @@
   right: 0;
   top: 0;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   background-color: rgba(0, 0, 0, .6);
   opacity: 0;
   font-size: @font-size;
@@ -20,6 +16,15 @@
   &.active {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  > div {
+    height: 100%;
+    pointer-events: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -56,18 +61,18 @@
 
   > button {
     position: absolute;
-    top: 1em;
-    left: .5em;
+    top: .75em;
+    right: .75em;
 
     background-color: @gray;
     border: none;
     border-radius: 50%;
-    color: white;
-    height: 1em;
+    color: @text-color-inverted;
+    height: 1.5em;
     line-height: 1em;
     padding: 0;
     text-align: center;
-    width: 1em;
+    width: 1.5em;
 
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -75,16 +80,12 @@
     appearance: none;
   }
 
-  > button > i {
-    position: absolute;
-    left: 0.25em;
-    top: 0;
-
-    font-size: .7em;
+  > button:hover {
+    opacity: .8;
   }
 
-  > button > .icon:before {
-    margin: 0;
+  > button > .icon-cancel:before {
+    margin-right: 0;
   }
 }
 
@@ -94,17 +95,19 @@
 }
 
 .modal-window {
+  overflow: auto;
+  pointer-events: auto;
+
   display: flex;
   align-items: stretch;
   flex-direction: column;
 
-  background-color: white;
+  background-color: @body-bg-color;
   border-radius: .5em;
   box-shadow: 0 0 2em 0 rgba(0, 0, 0, .6);
   flex: 1;
   margin: 0 auto;
   max-height: 80%;
   min-height: 40vh;
-  overflow: hidden;
-  width: 60em;
+  max-width: 60em;
 }

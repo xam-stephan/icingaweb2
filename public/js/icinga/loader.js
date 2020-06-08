@@ -299,7 +299,13 @@
                 this.requests[id] = req;
             }
             if (! autorefresh) {
-                req.$target.addClass('impact');
+                setTimeout(function () {
+                    // The column may have not been shown before. To make the transition
+                    // delay working we have to wait for the column getting rendered
+                    if (req.state() === 'pending') {
+                        req.$target.addClass('impact');
+                    }
+                }, 0);
             }
             this.icinga.ui.refreshDebug();
             return req;
@@ -935,7 +941,7 @@
                 this.icinga.timer.unregister(req.progressTimer);
             }
 
-            if (req.status > 0) {
+            if (req.status > 0 && req.status < 501) {
                 this.icinga.logger.error(
                     req.status,
                     errorThrown + ':',

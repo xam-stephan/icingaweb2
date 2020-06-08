@@ -19,12 +19,11 @@ class SettingsController extends Controller
         $this->createTabs();
 
         $query = (new Select())
-            ->from('dashboard')
-            ->columns('*')
+            ->from('dashboard_home')
+            ->columns('dashboard_home.*')
             ->where([
-                'type = "system" OR owner = ?'  => Auth::getInstance()->getUser()->getUsername()
-            ])
-            ->orderBy('dashboard.id');
+                'dashboard_home.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+            ]);
 
         $dashboard = $this->getDb()->select($query);
 
@@ -41,12 +40,11 @@ class SettingsController extends Controller
         $tabs = $this->getTabs();
 
         $select = (new Select())
-            ->columns('*')
-            ->from('dashboard')
+            ->columns('dashboard_home.*')
+            ->from('dashboard_home')
             ->where([
-                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
-            ])
-            ->orderBy('dashboard.id');
+                'dashboard_home.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+            ]);
 
         $userDashboards = $this->getDb()->select($select);
 

@@ -25,9 +25,9 @@ abstract class DashboardsForm extends CompatForm
 
         $select = (new Select())
             ->columns('*')
-            ->from('dashboard')
+            ->from('dashboard_home')
             ->where([
-                'dashboard.type = "system" OR dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+                'dashboard_home.owner = ?' => Auth::getInstance()->getUser()->getUsername()
             ]);
 
         $result = $this->getDb()->select($select);

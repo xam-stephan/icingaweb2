@@ -48,7 +48,7 @@ class DashletsController extends Controller
         $dashlet = $this->getDb()->select($query)->fetch();
 
         $select = (new Select())
-            ->from('dashboard')
+            ->from('dashboard_home')
             ->columns('*')
             ->where(['id = ?' => $dashboardId]);
 
@@ -75,7 +75,7 @@ class DashletsController extends Controller
         $this->tabs->disableLegacyExtensions();
 
         $select = (new Select())
-            ->from('dashboard')
+            ->from('dashboard_home')
             ->columns('*')
             ->where(['id = ?' => $this->params->getRequired('dashboardId')]);
 

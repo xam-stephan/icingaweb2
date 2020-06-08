@@ -34,7 +34,6 @@ class EditDashletForm extends DashboardsForm
             $this->populate([
                 'url' => $dashlet->url,
                 'name' => $dashlet->name,
-                'dashboard-type' => $dashboard->type,
                 'dashboard'      => $dashboard->id
             ]);
         }

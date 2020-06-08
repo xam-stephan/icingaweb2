@@ -87,7 +87,7 @@ class DashboardSetting extends BaseHtmlElement
                 ->columns('*')
                 ->where([
                     'dashboard_id = ?' => $dashboard->id,
-                    'type = "system" OR owner = ?' => Auth::getInstance()->getUser()->getUsername()
+                    'owner = ?' => Auth::getInstance()->getUser()->getUsername()
                 ])
                 ->orderBy('dashlet.id');
 

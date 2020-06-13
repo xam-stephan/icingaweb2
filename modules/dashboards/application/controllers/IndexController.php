@@ -3,7 +3,10 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use Icinga\Authentication\Auth;
+use Icinga\Exception\ConfigurationError;
+use Icinga\Exception\NotFoundError;
 use Icinga\Module\Dashboards\Common\Database;
+use Icinga\Module\Dashboards\Form\DashboardsHomeForm;
 use Icinga\Module\Dashboards\Web\Controller;
 use Icinga\Module\Dashboards\Web\Widget\Tabextension\DashboardAction;
 use Icinga\Module\Dashboards\Web\Widget\DashboardWidget;
@@ -17,24 +20,51 @@ class IndexController extends Controller
 
     public function indexAction()
     {
-        try {
-            $this->createTabsAndAutoActivateDashboard();
-        } catch (\Exception $e) {
-            $this->createTabsAndAutoActivateDashboard();
+        if (! array_key_exists('home', $this->getAllParams())) {
+            $this->setTitle($this->translate('Available Dashlets'));
+            $select = (new Select())
+                ->columns('dashboard.*')
+                ->from('dashboard')
+                ->join('dashboard_home', 'dashboard.home_id = dashboard_home.id')
+                ->where([
+                    'dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername()
+                ]);
 
-            Notification::error("No dashboard or dashlet found!");
+            $dashboards = $this->getDb()->select($select);
+
+            $content = new DashboardsHomeForm($dashboards);
+
+            $this->addContent($content);
+        } else {
+            try {
+                $db = $this->getDb();
+            } catch (ConfigurationError $_) {
+                $this->render('missing database \'dashboard\'', null, true);
+                return;
+            }
+
+            try {
+                $this->createTabsAndAutoActivateDashboard();
+            } catch (NotFoundError $_) {
+                Notification::error('No dashboards found');
+            }
+
+            $select = (new Select())
+                ->columns('dashlet.*')
+                ->from('dashlet')
+                ->join('dashboard d', 'dashlet.dashboard_id = d.id')
+                ->join('dashboard_home dh', 'd.home_id = dh.id')
+                ->join('dashlet_order', 'dashlet.id = dashlet_order.dashlet_id')
+                ->where([
+                    'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
+                    'dh.name = ?'   => $this->params->get('home')
+                ])
+                ->orderBy('dashlet_order.`order`', SORT_DESC);
+
+            $dashlets = $db->select($select);
+
+            $this->content = new DashboardWidget($dashlets);
         }
-
-        $select = (new Select())
-            ->columns('dashlet.*')
-            ->from('dashlet')
-            ->where([
-                'dashlet.dashboard_id = ?' => $this->tabs->getActiveName(),
-            ]);
-
-        $dashlets = $this->getDb()->select($select);
-
-        $this->content = new DashboardWidget($dashlets);
     }
 
     /**
@@ -50,19 +80,25 @@ class IndexController extends Controller
         $tabs = $this->getTabs();
 
         $select = (new Select())
-            ->columns('dashboard_home.*')
-            ->from('dashboard_home')
-            ->where(['dashboard_home.owner = ?' => Auth::getInstance()->getUser()->getUsername()]);
+            ->columns('dashboard.*')
+            ->from('dashboard')
+            ->join('dashboard_home', 'dashboard.home_id = dashboard_home.id')
+            ->where([
+                'dashboard.owner = ?' => Auth::getInstance()->getUser()->getUsername(),
+                'dashboard_home.name = ?' => $this->params->get('home')
+            ]);
 
         $query = (new Select())
-            ->columns('dashboard_home.*')
-            ->from('dashboard_home')
-            ->join('dashboard', 'dashboard.home_id = dashboard_home')
+            ->columns('dashboard.*')
+            ->from('dashboard')
+            ->join('dashboard_home', 'dashboard.home_id = dashboard_home.id')
             ->join('dashboard_user', 'dashboard_user.dashboard_id = dashboard.id')
-            ->where(['dashboard_user.user = ?' => Auth::getInstance()->getUser()->getUsername()]);
+            ->where([
+                'dashboard_user.user = ?' => Auth::getInstance()->getUser()->getUsername()
+            ]);
 
         $query->unionAll($select)
-            ->joinLeft(
+            ->joinRight(
                 'dashboard_home_order dho',
                 ['dho.home = dashboard_home.name AND dho.user = ?' => Auth::getInstance()->getUser()->getUsername()]
             )
@@ -75,6 +111,7 @@ class IndexController extends Controller
             $tabs->add($dashboard->id, [
                 'label' => $dashboard->name,
                 'url' => Url::fromPath('dashboards', [
+                    'home'      => $this->params->get('home'),
                     'dashboard' => $dashboard->id
                 ])
             ])->extend(new DashboardAction())->disableLegacyExtensions();

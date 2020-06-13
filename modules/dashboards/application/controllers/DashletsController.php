@@ -3,6 +3,7 @@
 namespace Icinga\Module\Dashboards\Controllers;
 
 use GuzzleHttp\Psr7\ServerRequest;
+use Icinga\Authentication\Auth;
 use Icinga\Module\Dashboards\Common\Database;
 use Icinga\Module\Dashboards\Form\DashletForm;
 use Icinga\Module\Dashboards\Form\DeleteDashboardForm;
@@ -135,6 +136,7 @@ class DashletsController extends Controller
             $requestIds = $this->getRequest()->getParam('dashletIds');
 
             $dashletIds = explode(',', $requestIds);
+            array_shift($dashletIds);
             $dashletPriority = count($dashletIds);
 
             if ($dashletPriority > 0) {
@@ -142,23 +144,16 @@ class DashletsController extends Controller
                     $select = (new Select())
                         ->columns('*')
                         ->from('dashlet')
-                        ->where(['id = ?' => $dashletId, 'type = "system"']);
+                        ->where(['id = ?' => $dashletId]);
 
-                    $dashlet = $this->getDb()->select($select)->fetch();
+                    $dashlet = $this->getDb()->select($select)->fetchObject();
 
-                    if ($dashlet) {
-                        $this->getDb()->update(
-                            'dashlet_order',
-                            ['`order`' => $dashletPriority--],
-                            ['dashlet_id = ?' => $dashletId]
-                        );
-                    } else {
-                        $this->getDb()->update(
-                            'dashlet_user_order',
-                            ['`order`' => $dashletPriority--],
-                            ['dashlet_id = ?' => $dashletId]
-                        );
-                    }
+                    $this->getDb()->update(
+                        'dashlet_order',
+                        ['`order`' => $dashletPriority--],
+                        ['dashlet_id = ?' => $dashletId],
+                        ['dashboard_id = ?' => $dashlet->dashboard_id]
+                    );
                 }
             }
         }
@@ -176,20 +171,23 @@ class DashletsController extends Controller
             if ($dashletWidth > 66.6) {
                 $this->getDb()->update(
                     'dashlet',
-                    ['style_width' => 99.9],
-                    ['id = ?' => $dashletIds]
+                    ['width' => 99.9],
+                    ['id = ?' => $dashletIds],
+                    ['dashboard_id = ?' => $this->tabs->getActiveName()]
                 );
             } elseif ($dashletWidth > 33.3 && $dashletWidth < 66.6) {
                 $this->getDb()->update(
                     'dashlet',
-                    ['style_width' => 66.6],
-                    ['id = ?' => $dashletIds]
+                    ['width' => 66.6],
+                    ['id = ?' => $dashletIds],
+                    ['dashboard_id = ?' => $this->tabs->getActiveName()]
                 );
             } elseif ($dashletWidth <= 33.3) {
                 $this->getDb()->update(
                     'dashlet',
-                    ['style_width' => 33.3],
-                    ['id = ?' => $dashletIds]
+                    ['width' => 33.3],
+                    ['id = ?' => $dashletIds],
+                    ['dashboard_id = ?' => $this->tabs->getActiveName()]
                 );
             }
         }

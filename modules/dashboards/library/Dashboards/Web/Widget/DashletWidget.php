@@ -30,6 +30,8 @@ class DashletWidget extends BaseHtmlElement
         $this->getAttributes()->add([
             'data-icinga-url' => Url::fromPath($this->dashlet->url)->addParams(['view' => 'compact']),
             'data-icinga-dashlet-id' => $this->dashlet->id,
+            'data-icinga-dashlet-col'   => $this->dashlet->width,
+            'style'     => 'width: ' . $this->dashlet->width . '%'
         ]);
 
         $this->add($this->title($this->dashlet->name));

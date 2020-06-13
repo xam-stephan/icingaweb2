@@ -52,14 +52,6 @@ class DashboardWidget extends BaseHtmlElement
     protected function assemble()
     {
         $dashlets = [];
-        $this->add(Html::tag('h1', null, Html::tag(
-            'button',
-            [
-                'id' => 'editMode',
-                'class' => 'button-link',
-            ],
-            t('Edit Mode')
-        )));
 
         foreach ($this->dashlets as $dashlet) {
             if (! in_array($dashlet->name, $dashlets)) {
@@ -68,5 +60,14 @@ class DashboardWidget extends BaseHtmlElement
                 $dashlets[] = $dashlet->name;
             }
         }
+
+        $this->add(Html::tag(
+            'button',
+            [
+                'id' => 'editMode',
+                'class' => 'button-link',
+            ],
+            t('Edit Mode')
+        ));
     }
 }

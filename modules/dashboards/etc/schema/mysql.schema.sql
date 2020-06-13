@@ -1,8 +1,8 @@
+DROP TABLE IF EXISTS dashlet_order;
 DROP TABLE IF EXISTS  dashlet;
 DROP TABLE IF EXISTS dashboard_user;
 DROP TABLE IF EXISTS dashboard_home_order;
 DROP TABLE IF EXISTS dashboard_order;
-DROP TABLE IF EXISTS dashlet_order;
 DROP TABLE IF EXISTS dashboard_share;
 DROP TABLE IF EXISTS dashboard;
 DROP TABLE IF EXISTS dashboard_home;
@@ -11,7 +11,7 @@ CREATE TABLE dashboard_home (
     id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name varchar(64) NOT NULL COLLATE utf8mb4_unicode_ci,
     owner varchar(254) DEFAULT NULL COLLATE utf8mb4_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'For dashboard home that a user only created not system';
 
 CREATE TABLE dashboard (
     id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -20,17 +20,20 @@ CREATE TABLE dashboard (
     owner varchar(254) DEFAULT NULL COLLATE utf8mb4_unicode_ci,
     shared enum('enforced', 'n', 'y') NOT NULL,
     CONSTRAINT fk_dashboard_dashboard_home FOREIGN KEY (home_id) REFERENCES dashboard_home (id) ON DELETE CASCADE ON UPDATE CASCADE
-) Engine=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Dashboards to be shared';
+) Engine=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Dashboards that will display in the UI';
 
 CREATE TABLE dashlet (
     id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
     dashboard_id int(10) unsigned NOT NULL,
+    home_id int(10) unsigned NOT NULL,
     name varchar(64) NOT NULL COLLATE utf8mb4_unicode_ci,
     url varchar(2048) NOT NULL,
     owner varchar(254) DEFAULT NULL COLLATE utf8mb4_unicode_ci,
     shared enum('enforced', 'n', 'y'),
-    CONSTRAINT fk_dashlet_dashboard FOREIGN KEY (dashboard_id) REFERENCES dashboard (id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    width float DEFAULT 33.3,
+    CONSTRAINT fk_dashlet_dashboard FOREIGN KEY (dashboard_id) REFERENCES dashboard (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_dashlet_dashboard_home FOREIGN KEY (home_id) REFERENCES dashboard (home_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Dashlets have dashboard and dashboard_home reference';
 
 CREATE TABLE dashboard_user (
     dashboard_id int(10) unsigned NOT NULL,
@@ -39,7 +42,7 @@ CREATE TABLE dashboard_user (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Dashboards enforced for certain users';
 
 CREATE TABLE dashboard_home_order (
-    home varchar(64) NOT NULL COMMENT 'varchar instead of id because of system dashboards' COLLATE utf8mb4_unicode_ci,
+    home varchar(64) NOT NULL COLLATE utf8mb4_unicode_ci,
     user varchar(254) DEFAULT NULL COLLATE utf8mb4_unicode_ci,
     `order` tinyint unsigned NOT NULL
 ) Engine=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Order of dashboard homes per user';
@@ -52,9 +55,10 @@ CREATE TABLE dashboard_order (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT 'Order of dashboards per home per user';
 
 CREATE Table dashlet_order (
-    dashlet VARCHAR(64) NOT NULL COLLATE utf8mb4_unicode_ci,
+    dashlet_id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user varchar(254) DEFAULT NULL COLLATE utf8mb4_unicode_ci,
-    `order` tinyint unsigned NOT NULL
+    `order` tinyint unsigned NOT NULL,
+    CONSTRAINT fk_dashlet_order_dashlet FOREIGN KEY (dashlet_id) REFERENCES dashlet (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE dashboard_share(

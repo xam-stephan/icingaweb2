@@ -14,7 +14,7 @@ class DashboardsHomeForm extends BaseHtmlElement
 {
     use Database;
 
-    protected object $dashboards;
+    protected $dashboards;
 
     protected $defaultAttributes = [
         'class'     => 'content home',
@@ -70,7 +70,7 @@ class DashboardsHomeForm extends BaseHtmlElement
                 'style' => 'font-weight: bolder; background: #f1f1f1;'
             ], $home->name), Html::tag('td', [
                 'style' => 'table-layout: fixed; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
-            ],  $dashboard->name),
+            ], $dashboard->name),
                 Html::tag('td', [
                     Html::tag('a', [
                         'href'  => 'dashboards/'

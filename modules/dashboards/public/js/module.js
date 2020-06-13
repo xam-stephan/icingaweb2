@@ -39,7 +39,7 @@
                     // Make the dashlets draggable
                     event.setAttribute('draggable', 'true');
                     // Make a div resizable when the Try it button is pressed
-                    event.setAttribute('style', 'resize: both;')
+                    //event.style.resize = 'both';
                     // Add some css style classes
                     event.classList.add('while-hover')
                     event.classList.add('while-resize')
@@ -140,13 +140,13 @@
 
             this.getDashlets($target).each(function () {
                 // Fetch the id Attribute from the html tag
-                dataIcingaId = $(this).attr("data-icinga-dashlet-id");
+                dataIcingaId = $(this).attr('data-icinga-dashlet-id');
                 // Check if the dashletsId that we create is still empty
-                if (dashletIds === " ") {
+                if (dashletIds === ' ') {
                     dashletIds = dataIcingaId;
                 }
                 else {
-                    dashletIds = dashletIds+","+dataIcingaId;
+                    dashletIds = dashletIds+','+dataIcingaId;
                 }
             });
 
@@ -170,7 +170,7 @@
             let $dashlets = this.getDashlets($(event.target));
 
             // Make a div resizable when the Try it button is pressed
-            //this.getDashlets($dashlets).css({resize: 'both'});
+            this.getDashlets($dashlets).css({resize: 'both'});
 
             this.getDashlets($dashlets).on('mousedown', function () {
                 let $dashlet = $(this);

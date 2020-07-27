@@ -6,10 +6,10 @@
 
 // Gray colors
 @gray: #c4c4c4;
-@gray-semilight: #686868;
+@gray-semilight: #888;
 @gray-light: #5c5c5c;
 @gray-lighter: #4b4b4b;
-@gray-lightest: #3b3b3b;
+@gray-lightest: #3a3a3a;
 
 @disabled-gray: #9a9a9a;
 
@@ -50,7 +50,7 @@
 // Text colors
 @text-color: @white;
 @text-color-inverted: @body-bg-color;
-@text-color-light: @gray;
+@text-color-light: fade(@text-color, 75%);
 @text-color-on-icinga-blue: @body-bg-color;
 
 // Text color on <a>

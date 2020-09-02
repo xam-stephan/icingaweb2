@@ -72,6 +72,11 @@ class RoleForm extends RepositoryForm
             $helper->filterName('config/*') => [
                 'name'          => 'config/*',
                 'description'   => $this->translate('Allow config access')
+            ],
+            $helper->filterName('manage/rememberme') => [
+                'name'          => 'manage/rememberme',
+                'description'   => $this->translate('Allow this user to view and delete other users 
+                rememberme cookies')
             ]
         ];
 

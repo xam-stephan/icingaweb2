@@ -3,6 +3,7 @@
 
 namespace Icinga\Legacy;
 
+use Exception;
 use Icinga\Application\Config;
 use Icinga\User;
 use Icinga\Web\Navigation\DashboardPane;
@@ -60,7 +61,14 @@ class DashboardConfig extends Config
     {
         $files = array();
         $dashboards = static::resolvePath('dashboards');
-        if ($handle = @opendir($dashboards)) {
+
+        try {
+            $handle = @opendir($dashboards);
+        } catch (Exception $_) {
+            return [];
+        }
+
+        if ($handle) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry[0] === '.' || ! is_dir($dashboards . '/' . $entry)) {
                     continue;
@@ -71,6 +79,7 @@ class DashboardConfig extends Config
             }
             closedir($handle);
         }
+
         return $files;
     }
 

@@ -3,6 +3,8 @@
 
 namespace Icinga\Application;
 
+use Exception;
+
 /**
  * Retrieve the version of Icinga Web 2
  */
@@ -47,7 +49,11 @@ class Version
             $repo .= '/.git';
         }
 
-        $head = @file_get_contents($repo . '/HEAD');
+        try {
+            $head = @file_get_contents($repo . '/HEAD');
+        } catch (Exception $_) {
+            return false;
+        }
 
         if ($head !== false) {
             if (preg_match('/^ref: (.+)/', $head, $matches)) {

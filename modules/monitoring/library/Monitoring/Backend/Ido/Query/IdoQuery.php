@@ -229,11 +229,11 @@ abstract class IdoQuery extends DbQuery
     protected $comment_id = 'comment_id';
 
     /**
-     * The primary key column for the customvariablestatus table
+     * The primary key column for the customvariables table
      *
      * @var string
      */
-    protected $customvariablestatus_id = 'customvariablestatus_id';
+    protected $customvariables_id = 'customvariables_id';
 
     /**
      * The primary key column for the hoststatus table
@@ -1217,7 +1217,7 @@ abstract class IdoQuery extends DbQuery
         );
 
         $this->select->joinLeft(
-            array($alias => $this->prefix . 'customvariablestatus'),
+            array($alias => $this->prefix . 'customvariables'),
             $joinOn,
             array()
         );
@@ -1502,8 +1502,8 @@ abstract class IdoQuery extends DbQuery
                 return $this->statehistory_id;
             case 'comments':
                 return $this->comment_id;
-            case 'customvariablestatus':
-                return $this->customvariablestatus_id;
+            case 'customvariables':
+                return $this->customvariables_id;
             case 'hoststatus':
                 return $this->hoststatus_id;
             case 'programstatus':
